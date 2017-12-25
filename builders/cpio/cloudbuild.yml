@@ -1,0 +1,15 @@
+steps:
+    - name: 'gcr.io/cloud-builders/docker'
+      args: [ 'pull', 'gcr.io/kolide-public-containers/cpio:latest' ]
+      id: 'pull-cpio-image'
+    - name: 'gcr.io/cloud-builders/docker'
+      args: [ 
+                'build', 
+                '--cache-from', 'gcr.io/kolide-public-containers/cpio:latest',
+                '-t', 'gcr.io/kolide-public-containers/cpio', 
+                '.' 
+            ]
+      waitFor: ['pull-cpio-image']
+      id: 'build-cio-image'
+images:
+    - 'gcr.io/kolide-public-containers/cpio'

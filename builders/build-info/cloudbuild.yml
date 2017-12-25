@@ -1,0 +1,13 @@
+steps:
+    - name: 'gcr.io/cloud-builders/go'
+      args: ['install', './cmd/build-info']
+      env: ['PROJECT_ROOT=build-info']
+    - name: 'gcr.io/cloud-builders/docker'
+      args: [
+                'build', 
+                '--tag=gcr.io/kolide-public-containers/build-info', 
+                '-f', './builders/build-info/Dockerfile',
+                '.'
+            ]
+images: 
+    - 'gcr.io/kolide-public-containers/build-info'

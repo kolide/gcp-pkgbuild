@@ -1,0 +1,16 @@
+steps:
+    - name: 'gcr.io/cloud-builders/docker'
+      args: [ 'pull', 'gcr.io/kolide-public-containers/bomutils:latest' ]
+      id: 'pull-bomutils-image'
+      waitFor: ['-']
+    - name: 'gcr.io/cloud-builders/docker'
+      args: [ 
+                'build', 
+                '--cache-from', 'gcr.io/kolide-public-containers/bomutils:latest',
+                '-t', 'gcr.io/kolide-public-containers/bomutils:latest', 
+                '.' 
+            ]
+      id: 'build-bomutils-image'
+      waitFor: ['pull-bomutils-image']
+images:
+    - 'gcr.io/kolide-public-containers/bomutils'

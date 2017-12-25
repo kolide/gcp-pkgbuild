@@ -1,0 +1,49 @@
+steps:
+
+    # create a Bom file from the package root
+    - name: 'gcr.io/kolide-public-containers/bomutils'
+      args: [ '/create_bom.sh' ]
+      waitFor: ['-']
+      id: 'mkbom'
+
+    # archive the contents of the package root to a Payload file.
+    - name: 'gcr.io/kolide-public-containers/cpio'
+      args: [ '/create_payload.sh' ]
+      id: 'payload'
+      waitFor: ['-']
+
+    # archive the contents of the scripts root to a Scripts file.
+    - name: 'gcr.io/kolide-public-containers/cpio'
+      args: [ '/create_scripts.sh' ]
+      waitFor: ['-']
+
+    # create a PackageInfo file
+    - name: 'gcr.io/kolide-public-containers/build-info'
+      args: [ 
+                '-root', './root', 
+                '-identifier', '${_PACKAGE_IDENTIFIER}', 
+                '-version', '${_PACKAGE_VERSION}', 
+                '-output', 'flat/base.pkg/PackageInfo'
+            ]
+      id: 'build-info'
+      waitFor: ['-']
+
+    # build a flat .pkg file
+    - name: 'gcr.io/kolide-public-containers/xar'
+      args: [ '/create_xar.sh', '${_PACKAGE_NAME}']
+      id: 'xar-archive'
+      waitFor: 
+        - 'payload' 
+        - 'mkbom' 
+        - 'build-info'
+
+    # upload the file to a the mac-packages storage bucket.
+    - name: 'gcr.io/cloud-builders/gsutil'
+      args: [
+                'cp', 
+                '${_PACKAGE_NAME}',
+                'gs://mac-packages/${_PACKAGE_NAME}'
+            ]
+      id: 'upload-package'
+      waitFor: ['xar-archive']
+
